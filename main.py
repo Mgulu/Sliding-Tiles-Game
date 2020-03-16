@@ -1,19 +1,20 @@
-from math import pow , sqrt 
+from math import pow , sqrt
+from copy import deepcopy
 
 
 class Node:
-  def __innit__(self,grid,previous):
+  def __init__(self,grid,previous):
     self.grid = grid
     self.previous = previous
 
   def setGvalue(self,gvalue):
-    self.gValue = gvalue;
+    self.gCost = gvalue
 
   def setHvalue(self,hValue):
-    self.hValue = hValue;
-  
+    self.hCost = hValue
+
   def setFvalue(self,fCost):
-    self.fCost = fCost;
+    self.fCost = fCost
 
 def findElem(grid,value):
   y =0
@@ -25,6 +26,10 @@ def findElem(grid,value):
       x+=1
     y+=1
 
+def printGrid(grid):
+  for i in grid:
+    print(str(i))
+
 def checkSolution(grid,goalGrid):
   if(grid == goalGrid):
     return True
@@ -34,34 +39,29 @@ def checkSolution(grid,goalGrid):
 def possibleMoves(grid,move):
   (x,y) = findElem(grid,0)
   if(y > 0 and move == 'UP'):
+    #print("UP")
     temp = grid[y-1][x]
     grid[y-1][x] = 0
     grid[y][x] = temp
     return 1
-  else:
-    return 100
-  if(y < 2 and move =="DOWN"):
+  elif(y < 2 and move =="DOWN"):
+    #print("DOWN")
     temp = grid[y+1][x]
     grid[y+1][x] = 0
     grid[y][x] = temp
     return 1
-  else: 
-    return 100
-  if(x > 0 and move == "LEFT"):
+  elif(x > 0 and move == "LEFT"):
+    #print("LEFT")
     temp = grid[y][x-1]
     grid[y][x-1] = 0
-    grid[y][x] = temp  
+    grid[y][x] = temp
     return 1
-  else:
-    return 100
-  if(x < 2 and move == "RIGHT"):
+  elif(x < 2 and move == "RIGHT"):
+    #print("RIGHT")
     temp = grid[y][x+1]
     grid[y][x+1] = 0
-    grid[y][x] = temp   
+    grid[y][x] = temp
     return 1
-  else:
-    return 100
-  
 
 
 
@@ -75,7 +75,7 @@ def manhattan(grid,goalGrid):
     manhattanCost += temp
   return manhattanCost
 
-  
+
 
 def missPlaced(grid,goalGrid):
   counter = 0
@@ -87,35 +87,103 @@ def missPlaced(grid,goalGrid):
         counter +=1
       x+=1
     y+=1
+ 
   return(counter)
 
 
 
 def aStar(initialGrid,goalState):
-  Node( )
   rootNode = Node(initialGrid,0)
+  rootNode.setGvalue(0)
+  rootNode.setHvalue(0)
+  rootNode.setFvalue(0)
   openSet = [rootNode]
   closedSet = []
+  gridClosedSet =[]
+  loop = 0
+  #gScore[initialGrid] = 0
   moves = ["UP","DOWN","LEFT","RIGHT"]
-  while len(openSet) > 0:
-    currentNode = min([x for x in openSet if x.Fcost < 10000])
-    openSet.remove(currentNode)
-    closedSet.append(currentNode)
+  while len(openSet)  :
+    #print(" THIS IS OPEN SET : "+ str(len(openSet)))
+    for i in openSet:
+      printGrid(i.grid)
+      print("\n")
+    lowestF = 9;
+    for i in openSet:
+      if i.fCost <= lowestF:
+        lowestF = i.fCost
+        currentNode = i   
 
-    if(checkSolution(currentNode.grid,goalState) == True):
+
+    print( "THIS IS THE MIN FCOST :" + str(currentNode.fCost))
+    print(currentNode.grid)
+
+    print("/////////This is loop : " + str(loop))
+    loop +=1 
+    openSet.remove(currentNode)
+    gridClosedSet.append(currentNode)
+    #print(currentNode.grid)
+
+    if(currentNode.grid == goalState):
+      print("FOUND ")
+      exit(1)
       return currentNode
-    
+
 
     for i in moves:
-      node = Node(currentNode.grid,currentNode)
+      print(" This is currentNode :")
+      
+      temp =  deepcopy(currentNode.grid)
+      printGrid(temp)
+      node = Node(temp,currentNode)
       pathCost = possibleMoves(node.grid, i)
-      if node in closedSet:
+      print(" THIS IS I :" +i)
+      print("THIS IS NODE : ")
+      printGrid(node.grid)
+          
+
+      if pathCost != 1:
+        print("TIS Continuing")
         continue
+
+      #if node.grid in gridClosedSet:        
+      #  continue
+
+
+      #tempGscore = gScore[currentNode] + 1
+
+      #if tempGscore >= gScore[node]:
+       # continue
+
       # REMEBER TO ADD SOMETHING FOR WHEN THE G COST IS LESS
-      if node in closedSet and node not in openSet:
-        node.gCost = currentNode.gCost + 1 + pathCost
-        node.hCost = missPlaced(node.grid,goalState)
+      #if node in closedSet and node not in openSet:
+
+      counter = 0
+      for i in gridClosedSet:
+        if node.grid == i.grid and i.gCost > currentNode.gCost + 1:
+          print(" THIS IS IGCOST" + str(i.gCost) + " CUrrent " + str(currentNode.gCost) + " \n")
+          print(" BEING CHANGED !!!! \n")
+          i.gCost = currentNode.gCost +1
+          i.previous = currentNode
+          continue
+        elif node.grid == i.grid and i.gCost < currentNode.gCost+1 :
+          print(" IT HAS CONTINUED \n")
+          continue
+        else:
+          counter +=1
+      openFlag = False
+      for i in openSet:
+        if node.grid == i.grid:
+          openFlag = True
+
+      if openFlag == False:
+        print("IN IF STATE: ")
+        printGrid(node.grid)
+        node.setGvalue(currentNode.gCost + 1 )
+        node.setHvalue(missPlaced(node.grid,goalState))
+        node.setFvalue(node.gCost + node.hCost)
         node.previous = currentNode
+        print(" THIS IS FCOST : "+ str(node.fCost))
         if node not in openSet:
           openSet.append(node)
 
@@ -128,20 +196,24 @@ def aStar(initialGrid,goalState):
 
 
 def main():
-    initialGrid = [[7,1,4],[5,0,6],[8,3,2]]
+    #initialGrid = [[7,1,4],[5,0,6],[8,3,2]]
+    initialGrid = [[3,1,2],[5,4,0],[6,7,8]]
     goalState = [[0,1,2],[3,4,5],[6,7,8]]
-    print(initialGrid)
-    print(goalState)
-    #possibleMoves(initialGrid,(1,1),"UP")    
+    #print("\n "+ "Initial Grid :" + str(initialGrid))
+    #print(goalState)
+    #possibleMoves(initialGrid,"UP")
     #print(findElem(initialGrid,3))
-    goalState = [[0,1,2],[3,4,5],[6,7,8]]
+    
     #print(missPlaced(initialGrid,goalState))
-    print(manhattan(initialGrid,goalState))
-    aStar(initialGrid,goalState)
+    #print(manhattan(initialGrid,goalState))
+    node = aStar(initialGrid,goalState)
+    print(node.grid)
+    
 
 
-    
-    
+
+
+
 
 
 if __name__ == '__main__':
