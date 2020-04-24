@@ -34,7 +34,7 @@ def gridInput():
     for i in range(3):
         for x in range(3):
             while(True):
-                print("Number left :  " + str([i for i in range(10) if i not in inputted]))
+                print("Number left :  " + str([i for i in range(9) if i not in inputted]))
                 num= int(input("Input number %s : " % len(inputted)))
                 print("Numbers left :")
                 if num > -1 and num <9 and (num not in inputted):
@@ -117,7 +117,6 @@ def aStar(initialGrid, goalState,hu):
     openSet = [rootNode]
     gridClosedSet = []
     loop = 0
-
     moves = ["UP", "DOWN", "LEFT", "RIGHT"]
     while len(openSet) > 0 :
 
@@ -215,28 +214,15 @@ def main():
     #initialGrid = [[7,1,4],[5,0,6],[8,3,2]]
     #initialGrid = [[5, 8, 6], [1, 4, 0], [3, 7, 2]]
     #goalState = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
-    # print("\n "+ "Initial Grid :" + str(initialGrid))
-    # print(goalState)
-    # possibleMoves(initialGrid,"UP")
-    # print(findElem(initialGrid,3))
-
-    # print(missPlaced(initialGrid,goalState))
-    # print(manhattan(initialGrid,goalState))
-
     print("Enter Initial Grid")
     grid = gridInput()
     print("Enter Goal grid")
     goalState = gridInput()
-
-
-
     while(True):
         hu = input("Manhattan(M) or Missplaced Tiles (T)").lower()
         if(hu =='m' or hu == "t"):
             break
-
     print(grid)
-
     node = aStar(grid, goalState,hu)
     moves = []
     while node.previous != 0:
