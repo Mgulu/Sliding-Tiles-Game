@@ -28,6 +28,23 @@ def findElem(grid, value):
         y += 1
 
 
+def gridInput():
+    grid = [[],[],[]]
+    inputted = []
+    for i in range(3):
+        for x in range(3):
+            while(True):
+                print("Number left :  " + str([i for i in range(10) if i not in inputted]))
+                num= int(input("Input number %s : " % len(inputted)))
+                print("Numbers left :")
+                if num > -1 and num <9 and (num not in inputted):
+                    inputted.append(num)
+                    grid[i].append(int(num))
+                    break
+                else:
+                    print("Invallid input")
+    return grid
+
 def printGrid(grid):
     for i in grid:
         print(str(i))
@@ -92,42 +109,36 @@ def missPlaced(grid, goalGrid):
     return (counter)
 
 
-def aStar(initialGrid, goalState):
+def aStar(initialGrid, goalState,hu):
     rootNode = Node(initialGrid, 0)
     rootNode.setGvalue(0)
     rootNode.setHvalue(0)
     rootNode.setFvalue(0)
     openSet = [rootNode]
-    closedSet = []
     gridClosedSet = []
     loop = 0
-    # gScore[initialGrid] = 0
+
     moves = ["UP", "DOWN", "LEFT", "RIGHT"]
     while len(openSet) > 0 :
 
         lowestF = 100000;
         for i in openSet:
-            #print(" THIS IS I , THIS IS MIN :" + str(i.fCost) + "  " + str(lowestF))
-            #printGrid(i.grid)
+
 
             if i.fCost <= lowestF:
                 lowestF = i.fCost
                 currentNode = i
 
-        #print("THIS IS THE MIN FCOST :" + str(currentNode.fCost))
-        #print(currentNode.grid)
 
-        #print("/////////This is loop : " + str(loop))
         loop += 1
-        #openSet.remove(currentNode)
+
+
+
         gridClosedSet.append(currentNode)
-        # print(currentNode.grid)
+
 
         if (currentNode.grid == goalState):
-            print("FOUND ")
-            #print(currentNode.grid)
-            #exit(1)
-            print(currentNode.grid)
+            print("This is Loop: " + str(loop))
             return currentNode
 
 
@@ -140,7 +151,7 @@ def aStar(initialGrid, goalState):
             pathCost = possibleMoves(node.grid, i)
             #print(" THIS IS I :" + i)
             #print("THIS IS NODE : ")
-            # printGrid(node.grid)
+            #printGrid(node.grid)
 
             if pathCost != 1:
                 #print("TIS Continuing")
@@ -155,7 +166,7 @@ def aStar(initialGrid, goalState):
             # continue
 
             # REMEBER TO ADD SOMETHING FOR WHEN THE G COST IS LESS
-            # if node in closedSet and node not in openSet:
+
 
 
             openFlag = False
@@ -185,7 +196,11 @@ def aStar(initialGrid, goalState):
                 #print("IN IF STATE: ")
                 #printGrid(node.grid)
                 node.setGvalue(currentNode.gCost + 1)
-                node.setHvalue(missPlaced(node.grid, goalState))
+                if hu == 't':
+                    node.setHvalue(missPlaced(node.grid, goalState))
+                else:
+                    node.setHvalue(manhattan(node.grid, goalState))
+
                 node.setFvalue(node.gCost + node.hCost)
                 node.previous = currentNode
                 #print(" THIS IS FCOST : " + str(node.fCost))
@@ -194,10 +209,12 @@ def aStar(initialGrid, goalState):
             # if i in closeSet
         openSet.remove(currentNode)
 
+
+
 def main():
     #initialGrid = [[7,1,4],[5,0,6],[8,3,2]]
-    initialGrid = [[5, 8, 6], [1, 4, 0], [3, 7, 2]]
-    goalState = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+    #initialGrid = [[5, 8, 6], [1, 4, 0], [3, 7, 2]]
+    #goalState = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
     # print("\n "+ "Initial Grid :" + str(initialGrid))
     # print(goalState)
     # possibleMoves(initialGrid,"UP")
@@ -205,14 +222,33 @@ def main():
 
     # print(missPlaced(initialGrid,goalState))
     # print(manhattan(initialGrid,goalState))
-    node = aStar(initialGrid, goalState)
-    #print(node.grid)
-    counter = 0
+
+    print("Enter Initial Grid")
+    grid = gridInput()
+    print("Enter Goal grid")
+    goalState = gridInput()
+
+
+
+    while(True):
+        hu = input("Manhattan(M) or Missplaced Tiles (T)").lower()
+        if(hu =='m' or hu == "t"):
+            break
+
+    print(grid)
+
+    node = aStar(grid, goalState,hu)
+    moves = []
     while node.previous != 0:
-        printGrid(node.grid)
+        moves.append(node.grid)
         node = node.previous
-        counter += 1
-    print(counter)
+
+    moves.reverse()
+    for i in moves:
+        printGrid(i)
+        print("\n")
+
+
 
 
 if __name__ == '__main__':
